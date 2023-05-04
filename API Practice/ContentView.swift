@@ -8,14 +8,34 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @StateObject private var vm = UsersViewModel()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        
+        NavigationView {
+            ZStack {
+                
+                if vm.isRefreshing {
+                    ProgressView()
+                } else {
+                    List {
+                        ForEach(vm.users) { user in
+                            
+                            UsersView(user: user)
+                                .listRowSeparator(.hidden)
+                        }
+                    }
+                    .listStyle(.plain)
+                    .navigationTitle("Users")
+                    
+                }
+            }
+            .onAppear(perform: vm.fetchUsers)
+            .alert(isPresented: $vm.hasError, error: vm.error) {
+                Button(action: vm.fetchUsers) { Text("Retry") }
+            }
         }
-        .padding()
     }
 }
 
